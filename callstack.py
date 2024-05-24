@@ -12,6 +12,8 @@ def produce_functions_timepoints(events):
             new_function_call = [event[0], [(event[2], "start")]]
             call_stack.append(new_function_call)
         elif event[1] == "end":
+            if len(call_stack) == 0:
+                raise Exception("This is not a valid call stack")
             function_call = call_stack.pop()
             if event[0] != function_call[0]:
                 raise Exception("This is not a valid call stack")
@@ -51,7 +53,8 @@ if __name__ == '__main__':
     #in_list = [("f", "start", 0), ("f", "end", 4), ("g", "start", 4), ("g", "end", 6)]
     #in_list = [("f", "start", 0), ("f", "end", 2), ("g", "start", 1), ("g", "end", 6)]
     #in_list = [("f", "start", 0), ("f", "end", 2), ("f", "start", 1), ("f", "end", 6)]
-    in_list = [("f", "start", 0), ("g", "end", 1)]
+    #in_list = [("f", "start", 0), ("g", "end", 1)]
+    in_list = [("f", "start", 0), ("f", "end", 4), ("g", "start", 5), ("g", "end", 1)]
     print(produce_functions_timepoints(in_list))
     out_list = functions_call_duration(in_list)
     print(out_list)

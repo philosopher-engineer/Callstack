@@ -53,6 +53,24 @@ class CallstackTestCase(unittest.TestCase):
             callstack.functions_call_duration(in_list)
         self.assertTrue('This is not a valid call stack' in str(context.exception))
 
+    def test_invalid_callstack_case_3(self):
+        in_list = [("f", "start", 2), ("f", "end", 0)]
+        with self.assertRaises(Exception) as context:
+            callstack.functions_call_duration(in_list)
+        self.assertTrue('This is not a valid call stack' in str(context.exception))
+
+    def test_invalid_callstack_case_4(self):
+        in_list = [("f", "start", 0), ("f", "end", 4), ("g", "start", 5), ("g", "end", 1)]
+        with self.assertRaises(Exception) as context:
+            callstack.functions_call_duration(in_list)
+        self.assertTrue('This is not a valid call stack' in str(context.exception))
+
+    def test_invalid_callstack_case_5(self):
+        in_list = [("f", "start", 3), ("f", "end", 1)]
+        with self.assertRaises(Exception) as context:
+            callstack.functions_call_duration(in_list)
+        self.assertTrue('This is not a valid call stack' in str(context.exception))
+
 
 if __name__ == '__main__':
     unittest.main()

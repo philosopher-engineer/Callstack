@@ -1,0 +1,25 @@
+SFC Placement Framework - Files to Download
+=============================================
+
+Core Implementation Files:
+1. sfc_placement_framework.py      - Main FPTAS algorithms implementation
+2. experimental_evaluation.py      - Comprehensive evaluation suite
+3. test_implementation.py          - Test suite for validation
+4. quick_demo.py                   - Quick demonstration script
+
+Configuration Files:
+5. requirements.txt                - Python dependencies
+6. README.md                       - Detailed documentation
+7. IMPLEMENTATION_SUMMARY.md       - Implementation summary
+
+Generated Results:
+8. sfc_demo_results.png           - Visualization results from demo
+
+Instructions:
+- Right-click each file in your file browser/IDE
+- Select "Download" or "Save As"
+- Or copy the file contents and paste into new files locally
+
+Essential files for running: 1, 2, 3, 4, 5
+Documentation files: 6, 7
+Results: 8

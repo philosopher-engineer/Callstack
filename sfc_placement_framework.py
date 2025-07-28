@@ -272,16 +272,15 @@ class SFCPlacementFramework:
                         configurations.append(config)
                         min_cost = cost
                 
-                # Remove edges with throughput = bottleneck
-                edges_to_remove = []
+                # Remove nodes with throughput = bottleneck to force different solutions
+                nodes_to_remove = []
                 for node in H_prime.nodes():
                     if ('throughput' in H_prime.nodes[node] and 
-                        H_prime.nodes[node]['throughput'] == bottleneck):
-                        # Remove all edges connected to this node
-                        edges_to_remove.extend(list(H_prime.in_edges(node)))
-                        edges_to_remove.extend(list(H_prime.out_edges(node)))
+                        H_prime.nodes[node]['throughput'] == bottleneck and
+                        node != source and node != sink):
+                        nodes_to_remove.append(node)
                 
-                H_prime.remove_edges_from(edges_to_remove)
+                H_prime.remove_nodes_from(nodes_to_remove)
                 
                 iteration += 1
                 
@@ -338,15 +337,15 @@ class SFCPlacementFramework:
                         configurations.append(config)
                         min_cost = cost_approx
                 
-                # Remove edges with throughput = bottleneck
-                edges_to_remove = []
+                # Remove nodes with throughput = bottleneck to force different solutions
+                nodes_to_remove = []
                 for node in H_prime.nodes():
                     if ('throughput' in H_prime.nodes[node] and 
-                        H_prime.nodes[node]['throughput'] == bottleneck):
-                        edges_to_remove.extend(list(H_prime.in_edges(node)))
-                        edges_to_remove.extend(list(H_prime.out_edges(node)))
+                        H_prime.nodes[node]['throughput'] == bottleneck and
+                        node != source and node != sink):
+                        nodes_to_remove.append(node)
                 
-                H_prime.remove_edges_from(edges_to_remove)
+                H_prime.remove_nodes_from(nodes_to_remove)
                 
                 iteration += 1
                 
@@ -422,27 +421,48 @@ class SFCPlacementFramework:
             if f[m][v] <= capacity:
                 best_v = v
         
-        # Backtrack to find solution
+        # Backtrack to find solution with proper tracking
         solution = []
-        j, v = m, best_v
+        parent = [[None] * (V_prime + 1) for _ in range(m + 1)]
         
-        while j > 0 and v > 0:
+        # Re-run DP with parent tracking
+        f = [[float('inf')] * (V_prime + 1) for _ in range(m + 1)]
+        f[0][0] = 0
+        
+        for j in range(1, m + 1):
             group = scaled_groups[j - 1]
-            
-            # Check if we selected an item from this group
-            selected_item = None
-            for item in group:
-                if (v >= item.profit and 
-                    f[j-1][v - item.profit] != float('inf') and
-                    f[j-1][v - item.profit] + item.weight == f[j][v]):
-                    selected_item = item
-                    break
-            
-            if selected_item:
-                solution.append(selected_item.item_id)
-                v -= selected_item.profit
-            
+            for v in range(V_prime + 1):
+                # Option 1: don't select any item from group j
+                if f[j-1][v] < f[j][v]:
+                    f[j][v] = f[j-1][v]
+                    parent[j][v] = None
+                
+                # Option 2: select an item from group j
+                for idx, item in enumerate(group):
+                    if v >= item.profit and f[j-1][v - item.profit] != float('inf'):
+                        weight = f[j-1][v - item.profit] + item.weight
+                        if weight <= capacity and weight < f[j][v]:
+                            f[j][v] = weight
+                            parent[j][v] = idx
+        
+        # Find best solution
+        best_v = 0
+        for v in range(V_prime + 1):
+            if f[m][v] <= capacity:
+                best_v = v
+        
+        # Backtrack using parent pointers
+        j, v = m, best_v
+        while j > 0:
+            if parent[j][v] is not None:
+                solution.append(parent[j][v])
+                item = scaled_groups[j-1][parent[j][v]]
+                v -= item.profit
+            else:
+                solution.append(-1)  # No selection for this group
             j -= 1
+        
+        solution.reverse()
         
         # Convert back to original profit scale
         actual_profit = 0
